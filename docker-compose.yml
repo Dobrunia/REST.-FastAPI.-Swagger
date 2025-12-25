@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  glossary-api:
+    build: .
+    container_name: glossary-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - glossary-data:/app/app/db
+    restart: unless-stopped
+
+volumes:
+  glossary-data:
