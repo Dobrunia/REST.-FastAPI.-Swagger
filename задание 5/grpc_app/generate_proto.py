@@ -25,6 +25,22 @@ def generate():
         print(f"Error: {result.stderr}")
         sys.exit(1)
     
+    # Fix import in generated grpc file
+    grpc_file = OUT_DIR / "glossary_pb2_grpc.py"
+    if grpc_file.exists():
+        content = grpc_file.read_text()
+        content = content.replace(
+            "import glossary_pb2 as glossary__pb2",
+            "from . import glossary_pb2 as glossary__pb2"
+        )
+        # Also handle direct import case
+        if "from . import" not in content:
+            content = content.replace(
+                "import glossary_pb2 as glossary__pb2",
+                "import glossary_pb2 as glossary__pb2"
+            )
+        grpc_file.write_text(content)
+    
     print("Generated: glossary_pb2.py, glossary_pb2_grpc.py")
 
 
