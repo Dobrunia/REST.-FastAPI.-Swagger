@@ -1,1 +1,7 @@
 Method,Name,Error,Occurrences
+PUT,/terms/Kubernetes,"CatchResponseError('Connection dropped, skipping')",1
+PUT,/terms/WebSocket,"CatchResponseError('Connection dropped, skipping')",1
+POST,/terms,"CatchResponseError('Connection dropped, skipping')",21
+PUT,/terms/PostgreSQL,"CatchResponseError('Connection dropped, skipping')",1
+PUT,/terms/JWT,"CatchResponseError('Connection dropped, skipping')",1
+PUT,/terms/JSON,"CatchResponseError('Connection dropped, skipping')",1

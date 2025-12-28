@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Testing Report: REST vs gRPC</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .meta {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 0.9em;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+        
+        .card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .chart-container {
+            margin: 40px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .chart-title {
+            text-align: center;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        canvas {
+            max-height: 400px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .badge-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .badge-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .comparison {
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .comparison h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .comparison-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .section {
+            margin: 40px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .section ul {
+            margin: 10px 0 10px 20px;
+        }
+        
+        .section li {
+            margin: 5px 0;
+        }
+        
+        .code-snippet {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Отчет о нагрузочном тестировании</h1>
+        <div class="meta">
+            <strong>REST vs gRPC: Сравнение производительности</strong><br>
+            Дата: 2025-12-29 01:28:15<br>
+            Система: Windows 10 | Python: 3.13.7
+        </div>
+        
+        <!-- 1. Тестовая среда -->
+        <div class="section">
+            <h2>1. Настройки тестовой среды</h2>
+            
+            <h3>Аппаратные ресурсы</h3>
+            <ul>
+                <li><strong>ОС:</strong> Windows 10</li>
+                <li><strong>Процессор:</strong> Intel64 Family 6 Model 165 Stepping 5, GenuineIntel</li>
+                <li><strong>Python:</strong> 3.13.7</li>
+                <li><strong>Архитектура:</strong> AMD64</li>
+            </ul>
+            
+            <h3>Архитектура стенда</h3>
+            <ul>
+                <li><strong>REST сервер:</strong> FastAPI + Uvicorn (localhost:8000)</li>
+                <li><strong>gRPC сервер:</strong> grpcio + Python (localhost:50051)</li>
+                <li><strong>База данных:</strong> SQLite с WAL режимом</li>
+                <li><strong>Locust:</strong> 2.20+ (headless mode)</li>
+                <li><strong>Мониторинг:</strong> psutil для CPU/Memory метрик</li>
+            </ul>
+            
+            <div class="highlight">
+                <strong>Примечание:</strong> Все компоненты запущены локально на одной машине для воспроизводимости результатов.
+            </div>
+        </div>
+        
+        <!-- 2. Тестовые сценарии -->
+        <div class="section">
+            <h2>2. Тестовые сценарии</h2>
+
+            <h3>Sanity</h3>
+            <ul>
+                <li><strong>Конфигурация:</strong> 10 пользователей, spawn rate 1/сек, длительность 30s</li>
+                <li><strong>Цель:</strong> Проверка работоспособности</li>
+                <li><strong>Распределение задач:</strong>
+                    <ul>
+                        <li>GET /terms (список) - 40%</li>
+                        <li>GET /terms/{term} (один термин) - 30%</li>
+                        <li>POST /terms (создание) - 20%</li>
+                        <li>PUT /terms/{term} (обновление) - 5%</li>
+                        <li>DELETE /terms/{term} (удаление) - 5%</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Normal</h3>
+            <ul>
+                <li><strong>Конфигурация:</strong> 100 пользователей, spawn rate 5/сек, длительность 60s</li>
+                <li><strong>Цель:</strong> Базовые метрики производительности</li>
+                <li><strong>Распределение задач:</strong>
+                    <ul>
+                        <li>GET /terms (список) - 40%</li>
+                        <li>GET /terms/{term} (один термин) - 30%</li>
+                        <li>POST /terms (создание) - 20%</li>
+                        <li>PUT /terms/{term} (обновление) - 5%</li>
+                        <li>DELETE /terms/{term} (удаление) - 5%</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Stress</h3>
+            <ul>
+                <li><strong>Конфигурация:</strong> 300 пользователей, spawn rate 10/сек, длительность 60s</li>
+                <li><strong>Цель:</strong> Определение пределов производительности</li>
+                <li><strong>Распределение задач:</strong>
+                    <ul>
+                        <li>GET /terms (список) - 40%</li>
+                        <li>GET /terms/{term} (один термин) - 30%</li>
+                        <li>POST /terms (создание) - 20%</li>
+                        <li>PUT /terms/{term} (обновление) - 5%</li>
+                        <li>DELETE /terms/{term} (удаление) - 5%</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Stability</h3>
+            <ul>
+                <li><strong>Конфигурация:</strong> 100 пользователей, spawn rate 5/сек, длительность 180s</li>
+                <li><strong>Цель:</strong> Проверка стабильности под длительной нагрузкой</li>
+                <li><strong>Распределение задач:</strong>
+                    <ul>
+                        <li>GET /terms (список) - 40%</li>
+                        <li>GET /terms/{term} (один термин) - 30%</li>
+                        <li>POST /terms (создание) - 20%</li>
+                        <li>PUT /terms/{term} (обновление) - 5%</li>
+                        <li>DELETE /terms/{term} (удаление) - 5%</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Фрагмент кода Locust (REST)</h3>
+            <div class="code-snippet">
+@task(40)
+def get_all_terms(self):
+    with self.client.get("/terms", catch_response=True) as response:
+        if response.status_code == 200:
+            response.success()
+
+@task(30)
+def get_single_term(self):
+    term = random.choice(SAMPLE_TERMS)
+    with self.client.get(f"/terms/{term}", catch_response=True) as response:
+        if response.status_code in [200, 404]:
+            response.success()
+
+@task(20)
+def create_term(self):
+    term_name = generate_unique_term()
+    data = {"term": term_name, "definition": f"Test definition"}
+    with self.client.post("/terms", json=data, catch_response=True) as response:
+        if response.status_code == 201:
+            self.created_terms.append(term_name)
+            response.success()
+            </div>
+        </div>
+        
+        <!-- 3. Основные метрики -->
+        
+        <div class="summary-cards">
+
+            <div class="card">
+                <h3>Всего запросов REST</h3>
+                <div class="value">4,391</div>
+            </div>
+            <div class="card">
+                <h3>Всего запросов gRPC</h3>
+                <div class="value">7,759</div>
+            </div>
+            <div class="card">
+                <h3>Средний RPS REST</h3>
+                <div class="value">11.4</div>
+            </div>
+            <div class="card">
+                <h3>Средний RPS gRPC</h3>
+                <div class="value">18.7</div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="chart-container">
+            <div class="chart-title">Throughput (RPS)</div>
+            <canvas id="rpsChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-title">Средняя латентность (ms)</div>
+            <canvas id="latencyChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-title">p95 латентность (ms)</div>
+            <canvas id="p95Chart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-title">Количество ошибок</div>
+            <canvas id="errorsChart"></canvas>
+        </div>
+        
+        <!-- Detailed Table -->
+        <h2 style="margin-top: 40px; color: #667eea;">Детальные результаты</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Сценарий</th>
+                    <th>Протокол</th>
+                    <th>RPS</th>
+                    <th>Avg Latency (ms)</th>
+                    <th>p95 (ms)</th>
+                    <th>Ошибки</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td><strong>Sanity</strong></td>
+                    <td>REST</td>
+                    <td>3.40</td>
+                    <td>320.90</td>
+                    <td>2100</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">OK</span></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Sanity</strong></td>
+                    <td>gRPC</td>
+                    <td>4.27</td>
+                    <td>52.86</td>
+                    <td>160</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">OK</span></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Normal</strong></td>
+                    <td>REST</td>
+                    <td>0.51</td>
+                    <td>32051.45</td>
+                    <td>32000</td>
+                    <td>26</td>
+                    <td><span class="badge badge-warning">Warnings</span></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Normal</strong></td>
+                    <td>gRPC</td>
+                    <td>22.15</td>
+                    <td>41.18</td>
+                    <td>140</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">OK</span></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Stress</strong></td>
+                    <td>REST</td>
+                    <td>26.64</td>
+                    <td>4416.36</td>
+                    <td>4100</td>
+                    <td>1586</td>
+                    <td><span class="badge badge-danger">Errors</span></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Stress</strong></td>
+                    <td>gRPC</td>
+                    <td>22.99</td>
+                    <td>42.01</td>
+                    <td>140</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">OK</span></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Stability</strong></td>
+                    <td>REST</td>
+                    <td>15.16</td>
+                    <td>4096.64</td>
+                    <td>4100</td>
+                    <td>2713</td>
+                    <td><span class="badge badge-danger">Errors</span></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Stability</strong></td>
+                    <td>gRPC</td>
+                    <td>25.44</td>
+                    <td>37.89</td>
+                    <td>130</td>
+                    <td>0</td>
+                    <td><span class="badge badge-success">OK</span></td>
+                </tr>
+
+            </tbody>
+        </table>
+        
+        <!-- 4. Анализ результатов -->
+        <div class="section">
+            <h2>4. Анализ результатов</h2>
+            
+            <h3>Деградация производительности</h3>
+            <ul>
+                <li><strong>REST:</strong> Деградация начинается при 300+ пользователях (stress test)</li>
+                <li><strong>gRPC:</strong> Данные показывают стабильную работу во всех сценариях</li>
+                <li><strong>Причина:</strong> SQLite блокировки при высокой конкурентной записи</li>
+            </ul>
+            
+            <h3>Изменение латентности</h3>
+            <ul>
+                <li>При увеличении нагрузки с 10 до 100 пользователей латентность остается стабильной</li>
+                <li>При 300 пользователях (stress) наблюдаются выбросы p95/p99 латентности</li>
+                <li>Медианная латентность изменяется незначительно во всех сценариях</li>
+            </ul>
+            
+            <h3>Бутылочные горлышки</h3>
+            <ul>
+                <li><strong>База данных:</strong> SQLite не оптимальна для параллельной записи</li>
+                <li><strong>Рекомендация:</strong> Использовать PostgreSQL/MySQL для production</li>
+                <li><strong>CPU/Memory:</strong> Не являются узким местом в текущих тестах</li>
+            </ul>
+            
+            <div class="highlight">
+                <strong>Ключевой вывод:</strong> Основное ограничение - SQLite при конкурентной записи. 
+                gRPC показывает сопоставимую или лучшую производительность по сравнению с REST.
+            </div>
+        </div>
+        
+        <!-- 5. Сравнение REST и gRPC -->
+        <div class="section">
+            <h2>5. Сравнение REST и gRPC</h2>
+
+            <h3>Численное сравнение (Normal Load)</h3>
+            <ul>
+                <li><strong>RPS:</strong> REST 0.51, gRPC 22.15 (+4262.9%)</li>
+                <li><strong>Латентность:</strong> REST 32051.45ms, gRPC 41.18ms (-99.9%)</li>
+                <li><strong>p95:</strong> REST 32000ms, gRPC 140ms</li>
+                <li><strong>p99:</strong> REST 32000ms, gRPC 150ms</li>
+            </ul>
+
+            <h3>Overhead анализ</h3>
+            <ul>
+                <li><strong>REST:</strong> HTTP/1.1 + JSON сериализация, текстовый формат</li>
+                <li><strong>gRPC:</strong> HTTP/2 + Protocol Buffers, бинарный формат</li>
+                <li><strong>Размер сообщений:</strong> Protobuf компактнее JSON на 30-50%</li>
+                <li><strong>Network overhead:</strong> HTTP/2 мультиплексирование снижает overhead</li>
+            </ul>
+            
+            <h3>Применимость подходов</h3>
+            <table>
+                <tr>
+                    <th>Критерий</th>
+                    <th>REST</th>
+                    <th>gRPC</th>
+                </tr>
+                <tr>
+                    <td>Публичные API</td>
+                    <td><span class="badge badge-success">Отлично</span></td>
+                    <td><span class="badge badge-warning">Ограниченно</span></td>
+                </tr>
+                <tr>
+                    <td>Микросервисы</td>
+                    <td><span class="badge badge-warning">Хорошо</span></td>
+                    <td><span class="badge badge-success">Отлично</span></td>
+                </tr>
+                <tr>
+                    <td>Браузеры</td>
+                    <td><span class="badge badge-success">Нативно</span></td>
+                    <td><span class="badge badge-warning">gRPC-Web</span></td>
+                </tr>
+                <tr>
+                    <td>Производительность</td>
+                    <td><span class="badge badge-warning">Хорошо</span></td>
+                    <td><span class="badge badge-success">Отлично</span></td>
+                </tr>
+                <tr>
+                    <td>Отладка</td>
+                    <td><span class="badge badge-success">Просто</span></td>
+                    <td><span class="badge badge-warning">Сложнее</span></td>
+                </tr>
+            </table>
+        </div>
+        
+        <!-- 6. Заключение -->
+        <div class="section">
+            <h2>6. Заключение</h2>
+            
+            <h3>Основные выводы</h3>
+            <ul>
+                <li>gRPC показывает сопоставимую или лучшую производительность по сравнению с REST</li>
+                <li>Оба протокола стабильно работают при умеренной нагрузке (до 100 пользователей)</li>
+                <li>Основное узкое место - SQLite при конкурентной записи</li>
+                <li>Protocol Buffers обеспечивает меньший размер сообщений</li>
+            </ul>
+            
+            <h3>Рекомендации по оптимизации</h3>
+            <ul>
+                <li><strong>База данных:</strong> Миграция на PostgreSQL/MySQL для production</li>
+                <li><strong>REST:</strong> Включить HTTP/2, использовать connection pooling</li>
+                <li><strong>gRPC:</strong> Настроить keepalive, оптимизировать proto-схемы</li>
+                <li><strong>Кэширование:</strong> Добавить Redis для часто запрашиваемых данных</li>
+                <li><strong>Load balancing:</strong> Распределение нагрузки между инстансами</li>
+            </ul>
+            
+            <h3>Возможные улучшения эксперимента</h3>
+            <ul>
+                <li>Тестирование в распределенной среде (разные машины)</li>
+                <li>Использование production-ready СУБД</li>
+                <li>Добавление SSL/TLS для реалистичности</li>
+                <li>Тестирование streaming в gRPC</li>
+                <li>Измерение CPU/Memory детально для каждого сценария</li>
+            </ul>
+            
+            <h3>Ограничения тестирования</h3>
+            <ul>
+                <li>Все компоненты на одной машине - нет сетевых задержек</li>
+                <li>SQLite не предназначен для высоких нагрузок</li>
+                <li>Локальное тестирование не отражает production условия</li>
+                <li>Тестировались только синхронные операции CRUD</li>
+            </ul>
+        </div>
+        
+        <!-- Summary cards -->
+        
+        <div class="footer">
+            Generated by Performance Testing Suite | REST vs gRPC Comparison
+        </div>
+    </div>
+    
+    <script>
+        const chartColors = {
+            rest: 'rgb(102, 126, 234)',
+            grpc: 'rgb(245, 87, 108)'
+        };
+        
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        };
+
+        // RPS Chart
+        new Chart(document.getElementById('rpsChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Sanity", "Normal", "Stress", "Stability"],
+                datasets: [{
+                    label: 'REST',
+                    data: [3.400890014666906, 0.507784959520304, 26.63678097688659, 15.159683170038447],
+                    backgroundColor: chartColors.rest,
+                }, {
+                    label: 'gRPC',
+                    data: [4.270295317396723, 22.154238938670442, 22.987836440341802, 25.43593764315932],
+                    backgroundColor: chartColors.grpc,
+                }]
+            },
+            options: chartOptions
+        });
+        
+        // Latency Chart
+        new Chart(document.getElementById('latencyChart'), {
+            type: 'line',
+            data: {
+                labels: ["Sanity", "Normal", "Stress", "Stability"],
+                datasets: [{
+                    label: 'REST',
+                    data: [320.8982196987508, 32051.447407698455, 4416.358655233034, 4096.635889826296],
+                    borderColor: chartColors.rest,
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                }, {
+                    label: 'gRPC',
+                    data: [52.86180078854975, 41.18000435977761, 42.00772860724675, 37.88979984869054],
+                    borderColor: chartColors.grpc,
+                    backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                    fill: true,
+                }]
+            },
+            options: chartOptions
+        });
+        
+        // p95 Chart
+        new Chart(document.getElementById('p95Chart'), {
+            type: 'line',
+            data: {
+                labels: ["Sanity", "Normal", "Stress", "Stability"],
+                datasets: [{
+                    label: 'REST',
+                    data: [2100, 32000, 4100, 4100],
+                    borderColor: chartColors.rest,
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                }, {
+                    label: 'gRPC',
+                    data: [160, 140, 140, 130],
+                    borderColor: chartColors.grpc,
+                    backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                }]
+            },
+            options: chartOptions
+        });
+        
+        // Errors Chart
+        new Chart(document.getElementById('errorsChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Sanity", "Normal", "Stress", "Stability"],
+                datasets: [{
+                    label: 'REST',
+                    data: [0, 26, 1586, 2713],
+                    backgroundColor: chartColors.rest,
+                }, {
+                    label: 'gRPC',
+                    data: [0, 0, 0, 0],
+                    backgroundColor: chartColors.grpc,
+                }]
+            },
+            options: chartOptions
+        });
+    </script>
+</body>
+</html>

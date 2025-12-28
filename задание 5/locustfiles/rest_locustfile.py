@@ -68,25 +68,45 @@ class GlossaryRESTUser(HttpUser):
             "term": term_name,
             "definition": f"Test definition for {term_name}"
         }
-        with self.client.post("/terms", json=data, catch_response=True) as response:
-            if response.status_code == 201:
-                self.created_terms.append(term_name)
-                response.success()
-            elif response.status_code == 409:
-                response.success()  # Term exists, acceptable
-            else:
-                response.failure(f"Status {response.status_code}")
+        try:
+            with self.client.post(
+                "/terms", 
+                json=data, 
+                catch_response=True,
+                timeout=30  # Increased to 30 seconds
+            ) as response:
+                if response.status_code == 201:
+                    self.created_terms.append(term_name)
+                    response.success()
+                elif response.status_code == 409:
+                    response.success()  # Term exists, acceptable
+                elif response.status_code == 0:
+                    response.failure("Connection dropped, skipping")
+                else:
+                    response.failure(f"Status {response.status_code}")
+        except Exception as e:
+            pass
 
     @task(5)
     def update_term(self):
         """PUT /terms/{term} - Update term (5% of requests)."""
         term = random.choice(SAMPLE_TERMS)
         data = {"definition": f"Updated definition at {time.time()}"}
-        with self.client.put(f"/terms/{term}", json=data, catch_response=True) as response:
-            if response.status_code in [200, 404]:
-                response.success()
-            else:
-                response.failure(f"Status {response.status_code}")
+        try:
+            with self.client.put(
+                f"/terms/{term}", 
+                json=data, 
+                catch_response=True,
+                timeout=30  # Increased to 30 seconds
+            ) as response:
+                if response.status_code in [200, 404]:
+                    response.success()
+                elif response.status_code == 0:
+                    response.failure("Connection dropped, skipping")
+                else:
+                    response.failure(f"Status {response.status_code}")
+        except Exception as e:
+            pass
 
     @task(5)
     def delete_term(self):

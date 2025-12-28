@@ -1,59 +1,58 @@
 Method,Name,Error,Occurrences
-PUT,/terms/SSL,CatchResponseError('Status 0'),8
-PUT,/terms/WebSocket,CatchResponseError('Status 0'),3
-PUT,/terms/API,CatchResponseError('Status 0'),4
-PUT,/terms/CDN,CatchResponseError('Status 0'),6
-GET,/terms/OAuth,CatchResponseError('Status 0'),36
-GET,/terms/DNS,CatchResponseError('Status 0'),29
-PUT,/terms/Protobuf,CatchResponseError('Status 0'),4
-GET,/terms/PostgreSQL,CatchResponseError('Status 0'),29
-PUT,/terms/SQL,CatchResponseError('Status 0'),3
-GET,/terms/HTTP,CatchResponseError('Status 0'),29
-PUT,/terms/Elasticsearch,CatchResponseError('Status 0'),3
-GET,/terms/CDN,CatchResponseError('Status 0'),29
-GET,/terms/UDP,CatchResponseError('Status 0'),28
-GET,/terms/NoSQL,CatchResponseError('Status 0'),27
-PUT,/terms/REST,CatchResponseError('Status 0'),5
-GET,/terms/TLS,CatchResponseError('Status 0'),40
-PUT,/terms/TCP,CatchResponseError('Status 0'),3
-GET,/terms/TCP,CatchResponseError('Status 0'),31
-GET,/terms/gRPC,CatchResponseError('Status 0'),30
-POST,/terms,CatchResponseError('Status 0'),569
-PUT,/terms/MQTT,CatchResponseError('Status 0'),8
-GET,/terms,CatchResponseError('Status 0'),1128
-PUT,/terms/MongoDB,CatchResponseError('Status 0'),3
-PUT,/terms/GraphQL,CatchResponseError('Status 0'),2
-GET,/terms/SQL,CatchResponseError('Status 0'),31
-GET,/terms/MQTT,CatchResponseError('Status 0'),23
-GET,/terms/Microservices,CatchResponseError('Status 0'),36
-PUT,/terms/PostgreSQL,CatchResponseError('Status 0'),4
-GET,/terms/SSL,CatchResponseError('Status 0'),35
-PUT,/terms/CORS,CatchResponseError('Status 0'),10
-GET,/terms/JSON,CatchResponseError('Status 0'),35
+PUT,/terms/Kubernetes,"CatchResponseError('Connection dropped, skipping')",5
+GET,/terms/OAuth,CatchResponseError('Status 0'),23
+GET,/terms/DNS,CatchResponseError('Status 0'),26
+PUT,/terms/SSL,"CatchResponseError('Connection dropped, skipping')",2
+PUT,/terms/HTTP,"CatchResponseError('Connection dropped, skipping')",8
+GET,/terms/PostgreSQL,CatchResponseError('Status 0'),36
+PUT,/terms/WebSocket,"CatchResponseError('Connection dropped, skipping')",3
+PUT,/terms/Redis,"CatchResponseError('Connection dropped, skipping')",3
+GET,/terms/HTTP,CatchResponseError('Status 0'),37
+GET,/terms/CDN,CatchResponseError('Status 0'),44
+POST,/terms,"CatchResponseError('Connection dropped, skipping')",573
+GET,/terms/UDP,CatchResponseError('Status 0'),27
+PUT,/terms/gRPC,"CatchResponseError('Connection dropped, skipping')",6
+GET,/terms/NoSQL,CatchResponseError('Status 0'),37
+PUT,/terms/OAuth,"CatchResponseError('Connection dropped, skipping')",3
+GET,/terms/TLS,CatchResponseError('Status 0'),34
+PUT,/terms/GraphQL,"CatchResponseError('Connection dropped, skipping')",2
+PUT,/terms/UDP,"CatchResponseError('Connection dropped, skipping')",2
+PUT,/terms/MQTT,"CatchResponseError('Connection dropped, skipping')",6
+PUT,/terms/API,"CatchResponseError('Connection dropped, skipping')",6
+GET,/terms/TCP,CatchResponseError('Status 0'),26
+GET,/terms/gRPC,CatchResponseError('Status 0'),25
+GET,/terms,CatchResponseError('Status 0'),1148
+PUT,/terms/Elasticsearch,"CatchResponseError('Connection dropped, skipping')",3
+GET,/terms/SQL,CatchResponseError('Status 0'),30
+PUT,/terms/REST,"CatchResponseError('Connection dropped, skipping')",5
+PUT,/terms/TCP,"CatchResponseError('Connection dropped, skipping')",5
+GET,/terms/MQTT,CatchResponseError('Status 0'),35
+GET,/terms/Microservices,CatchResponseError('Status 0'),46
+PUT,/terms/NoSQL,"CatchResponseError('Connection dropped, skipping')",4
+GET,/terms/SSL,CatchResponseError('Status 0'),36
+GET,/terms/JSON,CatchResponseError('Status 0'),24
+PUT,/terms/DNS,"CatchResponseError('Connection dropped, skipping')",4
 GET,/terms/Redis,CatchResponseError('Status 0'),32
-GET,/terms/API,CatchResponseError('Status 0'),27
-PUT,/terms/HTTP,CatchResponseError('Status 0'),7
-PUT,/terms/OAuth,CatchResponseError('Status 0'),3
-GET,/terms/REST,CatchResponseError('Status 0'),36
-PUT,/terms/UDP,CatchResponseError('Status 0'),5
-PUT,/terms/TLS,CatchResponseError('Status 0'),7
-PUT,/terms/JSON,CatchResponseError('Status 0'),1
-GET,/terms/Kubernetes,CatchResponseError('Status 0'),32
-GET,/terms/CORS,CatchResponseError('Status 0'),25
-GET,/terms/XML,CatchResponseError('Status 0'),34
-PUT,/terms/NoSQL,CatchResponseError('Status 0'),8
-PUT,/terms/Docker,CatchResponseError('Status 0'),5
-PUT,/terms/gRPC,CatchResponseError('Status 0'),3
-GET,/terms/Protobuf,CatchResponseError('Status 0'),34
-PUT,/terms/XML,CatchResponseError('Status 0'),9
-PUT,/terms/JWT,CatchResponseError('Status 0'),6
-GET,/terms/JWT,CatchResponseError('Status 0'),38
-PUT,/terms/Microservices,CatchResponseError('Status 0'),4
-GET,/terms/WebSocket,CatchResponseError('Status 0'),25
-PUT,/terms/DNS,CatchResponseError('Status 0'),8
-GET,/terms/Docker,CatchResponseError('Status 0'),34
-PUT,/terms/Kubernetes,CatchResponseError('Status 0'),7
-PUT,/terms/Redis,CatchResponseError('Status 0'),4
-GET,/terms/Elasticsearch,CatchResponseError('Status 0'),23
-GET,/terms/MongoDB,CatchResponseError('Status 0'),31
-GET,/terms/GraphQL,CatchResponseError('Status 0'),28
+PUT,/terms/SQL,"CatchResponseError('Connection dropped, skipping')",5
+GET,/terms/API,CatchResponseError('Status 0'),26
+PUT,/terms/MongoDB,"CatchResponseError('Connection dropped, skipping')",2
+PUT,/terms/Protobuf,"CatchResponseError('Connection dropped, skipping')",8
+GET,/terms/REST,CatchResponseError('Status 0'),26
+PUT,/terms/Microservices,"CatchResponseError('Connection dropped, skipping')",3
+GET,/terms/Kubernetes,CatchResponseError('Status 0'),23
+PUT,/terms/TLS,"CatchResponseError('Connection dropped, skipping')",6
+GET,/terms/CORS,CatchResponseError('Status 0'),38
+GET,/terms/XML,CatchResponseError('Status 0'),51
+PUT,/terms/PostgreSQL,"CatchResponseError('Connection dropped, skipping')",1
+PUT,/terms/CDN,"CatchResponseError('Connection dropped, skipping')",5
+GET,/terms/Protobuf,CatchResponseError('Status 0'),31
+PUT,/terms/JWT,"CatchResponseError('Connection dropped, skipping')",6
+GET,/terms/JWT,CatchResponseError('Status 0'),28
+GET,/terms/WebSocket,CatchResponseError('Status 0'),22
+PUT,/terms/JSON,"CatchResponseError('Connection dropped, skipping')",9
+GET,/terms/Docker,CatchResponseError('Status 0'),21
+PUT,/terms/CORS,"CatchResponseError('Connection dropped, skipping')",3
+PUT,/terms/Docker,"CatchResponseError('Connection dropped, skipping')",3
+GET,/terms/Elasticsearch,CatchResponseError('Status 0'),26
+GET,/terms/MongoDB,CatchResponseError('Status 0'),28
+GET,/terms/GraphQL,CatchResponseError('Status 0'),36

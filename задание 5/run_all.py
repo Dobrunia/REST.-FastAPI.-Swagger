@@ -93,6 +93,11 @@ def seed_databases():
     result = run_cmd(f"{sys.executable} scripts/seed_database.py", cwd=BASE_DIR)
     if result.stdout:
         print(result.stdout.strip())
+    
+    # Enable WAL mode for SQLite
+    print("Enabling WAL mode for better concurrency...")
+    run_cmd(f"{sys.executable} enable_wal.py", cwd=BASE_DIR)
+    
     print("Databases seeded")
 
 
@@ -309,9 +314,13 @@ def main():
         
         # Generate final report
         print("\n" + "=" * 50)
-        print("Generating final report...")
+        print("Generating reports...")
         print("=" * 50)
         run_cmd(f"{sys.executable} generate_report.py", cwd=BASE_DIR)
+        run_cmd(f"{sys.executable} generate_html_report.py", cwd=BASE_DIR)
+        print("\nReports generated:")
+        print("  - REPORT.md (Markdown)")
+        print("  - REPORT.html (Interactive charts)")
         
     except KeyboardInterrupt:
         print("\nInterrupted by user")
