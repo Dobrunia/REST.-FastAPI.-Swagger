@@ -149,18 +149,25 @@ def generate_report():
     
     scenarios = ['sanity', 'normal', 'stress', 'stability']
     
+    # Collect all available data
+    rest_data = {}
+    grpc_data = {}
+    
+    for scenario in scenarios:
+        rest_csv = results_dir / "rest" / f"{scenario}_stats.csv"
+        grpc_csv = results_dir / "grpc" / f"{scenario}_stats.csv"
+        
+        rest_data[scenario] = read_csv_stats(rest_csv)
+        grpc_data[scenario] = read_csv_stats(grpc_csv)
+    
     # Process each scenario
     for scenario in scenarios:
         report += f"## Сценарий: {scenario.capitalize()}\n\n"
         
-        # REST stats
-        rest_csv = results_dir / "rest" / f"{scenario}_stats.csv"
-        rest_stats = read_csv_stats(rest_csv)
-        report += generate_scenario_section("REST", scenario, rest_stats)
+        rest_stats = rest_data[scenario]
+        grpc_stats = grpc_data[scenario]
         
-        # gRPC stats
-        grpc_csv = results_dir / "grpc" / f"{scenario}_stats.csv"
-        grpc_stats = read_csv_stats(grpc_csv)
+        report += generate_scenario_section("REST", scenario, rest_stats)
         report += generate_scenario_section("gRPC", scenario, grpc_stats)
         
         # Comparison for this scenario
@@ -169,32 +176,103 @@ def generate_report():
         
         report += "---\n\n"
     
-    # Overall comparison
-    report += "## Итоговые выводы\n\n"
+    # Overall summary section
+    report += "## Итоговое сравнение по всем сценариям\n\n"
     
-    # Try to get normal load results for overall comparison
-    rest_normal = read_csv_stats(results_dir / "rest" / "normal_stats.csv")
-    grpc_normal = read_csv_stats(results_dir / "grpc" / "normal_stats.csv")
+    # Create summary table
+    report += "### Сводная таблица метрик\n\n"
+    report += "| Сценарий | Протокол | RPS | Avg латентность (ms) | p95 (ms) | Ошибки |\n"
+    report += "|----------|----------|-----|----------------------|----------|--------|\n"
     
-    if rest_normal and grpc_normal:
-        report += "На основе сценария Normal Load:\n\n"
-        report += compare_protocols(rest_normal, grpc_normal)
+    for scenario in scenarios:
+        for protocol, data_dict in [("REST", rest_data), ("gRPC", grpc_data)]:
+            stats = data_dict[scenario]
+            if stats and stats['aggregated']:
+                agg = stats['aggregated']
+                report += f"| {scenario.capitalize()} | {protocol} | "
+                report += f"{format_number(agg['Requests/s'])} | "
+                report += f"{format_number(agg['Average Response Time'])} | "
+                report += f"{agg['95%']} | "
+                report += f"{agg['Failure Count']} |\n"
+            else:
+                report += f"| {scenario.capitalize()} | {protocol} | - | - | - | - |\n"
+    
+    report += "\n"
+    
+    # Analysis based on available data
+    report += "### Общий анализ\n\n"
+    
+    # Check which scenarios have complete data
+    complete_scenarios = []
+    for scenario in scenarios:
+        if rest_data[scenario] and grpc_data[scenario]:
+            complete_scenarios.append(scenario)
+    
+    if complete_scenarios:
+        report += f"**Доступные данные:** {len(complete_scenarios)}/4 сценария\n\n"
+        
+        # Use normal or first available for detailed comparison
+        primary_scenario = 'normal' if 'normal' in complete_scenarios else complete_scenarios[0]
+        
+        report += f"**Детальное сравнение (сценарий {primary_scenario.capitalize()}):**\n\n"
+        report += compare_protocols(rest_data[primary_scenario], grpc_data[primary_scenario])
+        
+        # Performance trends
+        report += "### Тренды производительности\n\n"
+        
+        rest_rps_values = []
+        grpc_rps_values = []
+        
+        for scenario in complete_scenarios:
+            rest_agg = rest_data[scenario]['aggregated']
+            grpc_agg = grpc_data[scenario]['aggregated']
+            rest_rps_values.append(float(rest_agg['Requests/s']))
+            grpc_rps_values.append(float(grpc_agg['Requests/s']))
+        
+        if rest_rps_values and grpc_rps_values:
+            report += f"- REST: RPS варьируется от {format_number(min(rest_rps_values))} до {format_number(max(rest_rps_values))}\n"
+            report += f"- gRPC: RPS варьируется от {format_number(min(grpc_rps_values))} до {format_number(max(grpc_rps_values))}\n\n"
     else:
-        report += "**Недостаточно данных для итоговых выводов**\n\n"
-        report += "Необходимо выполнить все тестовые сценарии.\n\n"
+        report += "**Недостаточно данных для полного анализа**\n\n"
+        report += "Не все тестовые сценарии выполнены успешно.\n\n"
+        
+        # Show what's available
+        rest_available = sum(1 for s in scenarios if rest_data[s])
+        grpc_available = sum(1 for s in scenarios if grpc_data[s])
+        
+        report += f"- REST: {rest_available}/4 сценария доступны\n"
+        report += f"- gRPC: {grpc_available}/4 сценария доступны\n\n"
+        
+        if rest_available > 0 and grpc_available == 0:
+            report += "**Проблема:** gRPC тесты не прошли. Проверьте:\n"
+            report += "1. Сгенерированы ли proto файлы (python grpc_app/generate_proto.py)\n"
+            report += "2. Запущен ли gRPC сервер на порту 50051\n"
+            report += "3. Корректность импортов в locustfiles/grpc_locustfile.py\n\n"
     
+    # Recommendations
     report += "### Рекомендации\n\n"
-    report += "1. REST подходит для публичных API, простой интеграции\n"
-    report += "2. gRPC оптимален для внутренних микросервисов с высокой нагрузкой\n"
-    report += "3. Оба протокола показывают стабильную работу без ошибок\n"
-    report += "4. Для production рекомендуется использование production-ready БД вместо SQLite\n\n"
+    
+    if complete_scenarios:
+        report += "1. **REST:** подходит для публичных API, простой интеграции с браузерами\n"
+        report += "2. **gRPC:** оптимален для внутренних микросервисов, требующих высокой производительности\n"
+        report += "3. **Производительность:** оба протокола показывают приемлемую производительность\n"
+        report += "4. **Масштабирование:** для production использовать PostgreSQL/MySQL вместо SQLite\n"
+        report += "5. **Мониторинг:** добавить мониторинг CPU/Memory для выявления узких мест\n\n"
+    else:
+        report += "1. Исправить проблемы с запуском тестов\n"
+        report += "2. Повторно выполнить все сценарии\n"
+        report += "3. Убедиться в корректности конфигурации серверов\n\n"
     
     # Write report
     report_path = base_dir / "REPORT.md"
     report_path.write_text(report, encoding='utf-8')
     
     print(f"\nReport generated: {report_path}")
-    print(f"Open in browser or editor to view results")
+    print(f"Scenarios processed: {len(complete_scenarios)}/4")
+    if complete_scenarios:
+        print(f"Available: {', '.join(complete_scenarios)}")
+    else:
+        print("WARNING: No complete test data available")
 
 
 if __name__ == "__main__":
