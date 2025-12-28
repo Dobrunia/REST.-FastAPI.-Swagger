@@ -45,3 +45,7 @@ app/db/*.db
 .DS_Store
 Thumbs.db
 
+задание 4/node_modules/
+задание 4/*.db
+задание 4/.env
+задание 4/.DS_Store

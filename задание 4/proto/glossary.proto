@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package glossary;
+
+// Пустое сообщение для запросов без параметров
+message Empty {}
+
+// Сообщение с результатом операции
+message OperationResult {
+  bool success = 1;
+  string message = 2;
+}
+
+// Запрос термина по ключевому слову
+message TermRequest {
+  string term = 1;
+}
+
+// Запрос на создание термина
+message CreateTermRequest {
+  string term = 1;
+  string definition = 2;
+}
+
+// Запрос на обновление термина
+message UpdateTermRequest {
+  string term = 1;
+  string definition = 2;
+}
+
+// Термин с полной информацией
+message Term {
+  int32 id = 1;
+  string term = 2;
+  string definition = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}
+
+// Список терминов
+message TermList {
+  repeated Term terms = 1;
+}
+
+// Сервис глоссария
+service GlossaryService {
+  // Получить список всех терминов
+  rpc GetTerms(Empty) returns (TermList);
+  
+  // Получить термин по ключевому слову
+  rpc GetTerm(TermRequest) returns (Term);
+  
+  // Создать новый термин
+  rpc CreateTerm(CreateTermRequest) returns (Term);
+  
+  // Обновить существующий термин
+  rpc UpdateTerm(UpdateTermRequest) returns (Term);
+  
+  // Удалить термин
+  rpc DeleteTerm(TermRequest) returns (OperationResult);
+}
+
