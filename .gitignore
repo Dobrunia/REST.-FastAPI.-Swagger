@@ -49,3 +49,6 @@ Thumbs.db
 задание 4/*.db
 задание 4/.env
 задание 4/.DS_Store
+
+# Задание 7 - RAG Assistant
+задание 7/artifacts/*.json

@@ -1,0 +1,4 @@
+# This directory stores generated artifacts:
+# - uploaded_files.json (IDs of files uploaded to Yandex Cloud)
+# - index.json (search index ID)
+# These files are ignored by git.
